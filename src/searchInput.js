@@ -13,7 +13,6 @@ const InputField = () => {
 
   const fetchSuggestions = async () => {
     try {
-      console.log(selectedItems)
       const response = await axios.post(`http://localhost:5001/api/suggestions?query=${inputValue}`, { selectedItems });
       setSuggestions(response.data);
     } catch (error) {
@@ -31,7 +30,6 @@ const InputField = () => {
     setInputValue(value);
 
     try {
-      console.log(selectedItems)
       const response = await axios.post(`http://localhost:5001/api/suggestions?query=${inputValue}`, { selectedItems });
       setSuggestions(response.data);
     } catch (error) {
@@ -67,6 +65,22 @@ const InputField = () => {
   };
 
   useEffect(() => {
+    const handleOutsideClick = (event) => {
+      const containerDiv = document.getElementById('containerDiv');
+      if (containerDiv && !containerDiv.contains(event.target)) {
+        // Clicked outside the container, close the dropdown
+        setShowDropdown(false);
+      }
+    };
+  
+    document.addEventListener('click', handleOutsideClick);
+  
+    return () => {
+      document.removeEventListener('click', handleOutsideClick);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleDocumentKeyDown = (event) => {
         if (flag && event.key === 'Backspace' && document.activeElement !== inputRef.current) {
           const lastSelectedItem = selectedItems[selectedItems.length - 1];
@@ -78,7 +92,7 @@ const InputField = () => {
           setFlag(false);
         }
         else{
-         setFlag(true);
+          setFlag(true);
         }
       };
     document.addEventListener('keydown', handleDocumentKeyDown);
@@ -86,10 +100,10 @@ const InputField = () => {
     return () => {
       document.removeEventListener('keydown', handleDocumentKeyDown);
     };
-  }, [selectedItems, flag])
+  }, [flag, selectedItems])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div id='containerDiv' style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div className="inputContainer" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: '4px' }} onClick = {handleOnClick}>
         {selectedItems.map((item) => (
           <div key={item.id} className="selected-item">
