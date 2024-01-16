@@ -7,24 +7,36 @@ const InputField = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5001/api/suggestions?query=${inputValue}`);
-        setSuggestions(response.data);
-      } catch (error) {
-        console.error('Error fetching suggestions:', error);
-      }
-    };
 
+  const fetchSuggestions = async () => {
+    try {
+      console.log(selectedItems)
+      const response = await axios.post(`http://localhost:5001/api/suggestions?query=${inputValue}`, { selectedItems });
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
+  const handleOnClick = () => {
     fetchSuggestions();
-  }, []);
+    setShowDropdown(true);
+  }
 
-  const handleInputChange = (event) => {
+  const handleInputChange = async (event) => {
     const value = event.target.value;
     setInputValue(value);
+
+    try {
+      console.log(selectedItems)
+      const response = await axios.post(`http://localhost:5001/api/suggestions?query=${inputValue}`, { selectedItems });
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+    }
 
     const filteredSuggestions = suggestions.filter(
       (suggestion) =>
@@ -78,7 +90,7 @@ const InputField = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="inputContainer" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: '4px' }}>
+      <div className="inputContainer" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginBottom: '4px' }} onClick = {handleOnClick}>
         {selectedItems.map((item) => (
           <div key={item.id} className="selected-item">
             <div className="avatar"><img src={item.img} alt="pic"/></div>
@@ -100,7 +112,7 @@ const InputField = () => {
           ref={inputRef}
         />
       </div>
-      {inputValue.trim() !== '' && suggestions.length > 0 && (
+      {(showDropdown || (inputValue.trim() !== '' && suggestions.length > 0)) && (
         <div
           className="dropdown"
           style={{
